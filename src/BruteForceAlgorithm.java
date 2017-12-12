@@ -16,30 +16,49 @@ public class BruteForceAlgorithm {
 
     public static void main(String[] args) throws IOException {
 
+        //print the graph
         Graph<String, DefaultEdge> initialGraph = createGraph();
         System.out.println(initialGraph);
 
         ArrayList degree;
 
-        String[] coreD;
+        String[][] coreD;
 
         degree = findDegree(initialGraph);
         System.out.println(degree);
 
+        int max = (Integer) Collections.max(degree, null);
+
         coreD = findCoreDecomposition(degree, initialGraph);
-        for (int i = 0; i < coreD.length; i++) {
-            System.out.println(coreD[i]);
+
+          //print the degrees of every vertex in the i-core
+        for (int i = 0; i <= max; i++) {
+            for (int j = 0; j < degree.size(); j++){
+                System.out.print(coreD[i][j]);
+            }
+            System.out.println("");
+        }
+
+        //print the core decomposition
+        System.out.println("");
+        for (int i = 0; i <= max; i++) {
+            System.out.print(i + "-Core: {");
+            for (int j = 0; j < degree.size(); j++) {
+                if (coreD[i][j] != "0") {
+                    System.out.print(" " + j);
+                }
+            }
+            System.out.println(" }");
         }
 
     }
-
 
     //Create a graph based on an input file.
     private static Graph<String, DefaultEdge> createGraph() throws IOException {
         Graph<String, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
         String line;
 
-        BufferedReader br = new BufferedReader(new FileReader("graphs/graph1.txt"));
+        BufferedReader br = new BufferedReader(new FileReader("graphs/graph2.txt"));
         while ((line = br.readLine()) != null) {
 
             //read each line and set the two nodes in two variables
@@ -89,35 +108,33 @@ public class BruteForceAlgorithm {
     }
 
 
-    private static String[] findCoreDecomposition(ArrayList d, Graph<String, DefaultEdge> g) throws IOException{
+    private static String[][] findCoreDecomposition(ArrayList d, Graph<String, DefaultEdge> g) throws IOException{
         //coreness vector k can be up to the maximum degree of graph
         int max = (Integer) Collections.max(d, null);
 
         // function returns a string array that contains the degrees of the vertices of every k-core
-        String[] c = new String[max + 1];
+        String[][] c = new String[max + 1][d.size()];
 
         //i is the vector of the core
         for (int i = 0; i <= max; i++) {
-            //initialising c[]
-            c[i] ="";
             // j is the vertex degree counter
             for (int j = 0; j < d.size(); j++) {
                 // vertex j has been removed along with the edges
                 if ((Integer)d.get(j) == 0) {
-                    c[i] += "0";
+                    c[i][j] = "0";
                     continue;
                 }
                 // vertex j will not be contained at the core
                 if (i > (Integer) d.get(j)) {
                     //update the graph and find the new degrees
-                    g = updateGraph(g, Integer.toString(j), max);
+                    g = updateGraph(g, Integer.toString(j), d.size());
                     d = findDegree(g);
-                    c[i] += "0";
+                    c[i][j] = "0";
                     j = -1;
                     // return to the j = 0 to check again
                 }else {
                     // vertex j will be contained at the core
-                    c[i] += d.get(j).toString();
+                    c[i][j] = d.get(j).toString();
                 }
             }
         }
@@ -127,6 +144,9 @@ public class BruteForceAlgorithm {
 
     private static Graph<String, DefaultEdge> updateGraph(Graph<String, DefaultEdge> g, String v, int size) throws IOException {
         for (int i = 0; i < size; i++){
+            if (v == Integer.toString(i)) {
+                continue;
+            }
             g.removeEdge(v, Integer.toString(i));
             g.removeEdge(Integer.toString(i), v);
 
