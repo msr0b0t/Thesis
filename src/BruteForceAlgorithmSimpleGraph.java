@@ -1,6 +1,6 @@
 /*
  * Created by Mary on 01/12/2017.
- * This is a brute force algorithm that reads a graph file and finds the core decomposition of the graph
+ * This is a brute force algorithm that reads a graph file and finds the core decomposition of a simple graph
  */
 
 import org.jgrapht.Graph;
@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.*;
 
 
-public class BruteForceAlgorithm {
+public class BruteForceAlgorithmSimpleGraph {
 
     public static void main(String[] args) throws IOException {
 
@@ -31,9 +31,9 @@ public class BruteForceAlgorithm {
 
         coreD = findCoreDecomposition(degree, initialGraph);
 
-          //print the degrees of every vertex in the i-core
+        //print the degrees of every vertex in the i-core
         for (int i = 0; i <= max; i++) {
-            for (int j = 0; j < degree.size(); j++){
+            for (int j = 0; j < degree.size(); j++) {
                 System.out.print(coreD[i][j]);
             }
             System.out.println("");
@@ -44,7 +44,7 @@ public class BruteForceAlgorithm {
         for (int i = 0; i <= max; i++) {
             System.out.print(i + "-Core: {");
             for (int j = 0; j < degree.size(); j++) {
-                if (coreD[i][j] != "0") {
+                if (!Objects.equals(coreD[i][j], "0")) {
                     System.out.print(" " + j);
                 }
             }
@@ -56,9 +56,10 @@ public class BruteForceAlgorithm {
     //Create a graph based on an input file.
     private static Graph<String, DefaultEdge> createGraph() throws IOException {
         Graph<String, DefaultEdge> g = new SimpleGraph<>(DefaultEdge.class);
+
         String line;
 
-        BufferedReader br = new BufferedReader(new FileReader("graphs/graph2.txt"));
+        BufferedReader br = new BufferedReader(new FileReader("graphs/graph1.txt"));
         while ((line = br.readLine()) != null) {
 
             //read each line and set the two nodes in two variables
@@ -75,7 +76,6 @@ public class BruteForceAlgorithm {
             }
 
         }
-
         return g;
     }
 
@@ -144,7 +144,7 @@ public class BruteForceAlgorithm {
 
     private static Graph<String, DefaultEdge> updateGraph(Graph<String, DefaultEdge> g, String v, int size) throws IOException {
         for (int i = 0; i < size; i++){
-            if (v == Integer.toString(i)) {
+            if (Objects.equals(v, Integer.toString(i))) {
                 continue;
             }
             g.removeEdge(v, Integer.toString(i));
