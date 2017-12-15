@@ -15,17 +15,17 @@ public class BruteForceAlgorithmLabeledMultigraph {
     public static void main(String[] args) throws IOException {
 
         //create the multigraph
-        Multigraph<String,GraphLayerEdge> mg = createMultigraph();
+        Multigraph<String, GraphLayerEdge> mg = createMultigraph();
         System.out.println(mg + "\n");
 
         List layers = new ArrayList(mg.edgeSet().size());
         int numberOfLayers = 0;
 
-        for (int i = 0; i < mg.vertexSet().size(); i++){
-            for (int j = 0; j < mg.vertexSet().size(); j++){
-                if (mg.containsEdge(Integer.toString(i), Integer.toString(j))){
+        for (int i = 0; i < mg.vertexSet().size(); i++) {
+            for (int j = 0; j < mg.vertexSet().size(); j++) {
+                if (mg.containsEdge(Integer.toString(i), Integer.toString(j))) {
                     String label = mg.getEdge(Integer.toString(i), Integer.toString(j)).toString();
-                    if (!layers.contains(label)){
+                    if (!layers.contains(label)) {
                         layers.add(label);
                         numberOfLayers++;
                     }
@@ -33,19 +33,35 @@ public class BruteForceAlgorithmLabeledMultigraph {
             }
         }
 
-        int[][] degree = findDegree(mg,numberOfLayers);
+        int[][] degree = findDegree(mg, numberOfLayers);
 
         int[] max = new int[numberOfLayers];
 
-        for (int i = 0; i < numberOfLayers; i++){
+        for (int i = 0; i < numberOfLayers; i++) {
             max[i] = 0;
-            for (int j = 0; j < mg.vertexSet().size(); j++){
-                if (degree[i][j] > max[i]){
+            for (int j = 0; j < mg.vertexSet().size(); j++) {
+                if (degree[i][j] > max[i]) {
                     max[i] = degree[i][j];
                 }
-                System.out.println("Layer: " + (i+1) + " Vertix: " + j + " Degree: " + degree[i][j]);
+                System.out.println("Layer: " + (i + 1) + " Vertix: " + j + " Degree: " + degree[i][j]);
             }
             System.out.println("");
+        }
+
+        int maxD = 0;
+        for (int aMax : max) {
+            if (aMax > maxD) {
+                maxD = aMax;
+            }
+        }
+
+
+        String[][] coreDecomposition = findCoreDecomposition(mg, max, maxD);
+
+        for (int i = 0; i < max.length; i++) {
+            for (int j = 0; j <= maxD; j++) {
+                System.out.println("layer: " + i + " core: " + j + " vertices of the core: " + coreDecomposition[i][j]);
+            }
         }
 
 
@@ -94,17 +110,59 @@ public class BruteForceAlgorithmLabeledMultigraph {
         return d;
     }
 
-    private static String[][] findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int[][] d, int[] max){
+    private static String[][] findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int[] max,int maxD){
 
-        int maxD = 0;
+        // c[][] is an array with dimensions the number of layers and the number of cores
+        // the value of every element is a list that contains the vertices that are contained in the core
+        String[][] c = new String[max.length][maxD + 1];
+        //do stuff
+
+        Multigraph<String, GraphLayerEdge> tempMg = mg;
+        int[][] tempDegree = findDegree(tempMg,max.length);
+
+        //for every layer i compute the core decomposition
         for (int i = 0; i < max.length; i++){
-            if (max[i] > maxD){
-                maxD = max[i];
+            // for every core vector j
+            for (int j = 0; j <= maxD; j++){
+                ArrayList<Integer> verticesOfCore = new ArrayList<>();
+                for (int k = 0; k < tempMg.vertexSet().size(); k++){
+                    // if core vector k in layer i is bigger than the degree of the vertex k
+                    if (tempDegree[i][k] == 0){
+                        continue;
+                    }
+                    if (j > tempDegree[i][k]){
+                        //update the tempGraph
+                        tempMg = updateGraph(tempMg, i, k);
+                        //find new degrees
+                        tempDegree = findDegree(tempMg,max.length);
+                        k = -1;
+                    }else {
+                        verticesOfCore.add(k);
+                    }
+                }
+                //Array list or String?
+                c[i][j] = verticesOfCore.toString();
             }
         }
 
-        String[][] c = new String[maxD][maxD];
-        //do stuff
         return c;
+    }
+
+    private static Multigraph<String, GraphLayerEdge> updateGraph(Multigraph<String, GraphLayerEdge> g, int layer, int vertex) {
+
+        boolean flag = true;
+        while (flag) {
+            for (GraphLayerEdge edge : g.edgeSet()) {
+                if (edge.toString().equals(String.valueOf(layer + 1)) && (Objects.equals(String.valueOf(edge.getV1()), String.valueOf(vertex)) || Objects.equals(String.valueOf(edge.getV2()), String.valueOf(vertex)))) {
+                    System.out.printf("\nEdge: {" +edge.getV1() + ", " + edge.getV2() + "} from layer " + (layer+1) + " is removed\n");
+                    g.removeEdge(edge);
+                    break;
+                } else {
+                    flag = false;
+                }
+            }
+        }
+
+        return g;
     }
 }
