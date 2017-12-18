@@ -56,15 +56,14 @@ public class BruteForceAlgorithmLabeledMultigraph {
         }
 
 
-        String[][] coreDecomposition = findCoreDecomposition(mg, max, maxD);
+        ArrayList[][] coreDecomposition = findCoreDecomposition(mg, max, maxD);
 
         for (int i = 0; i < max.length; i++) {
             for (int j = 0; j <= maxD; j++) {
-                System.out.println("layer: " + i + " core: " + j + " vertices of the core: " + coreDecomposition[i][j]);
+                System.out.println("layer: " + (i+1) + " core: " + j + " vertices of the core: " + coreDecomposition[i][j]);
             }
+            System.out.println("");
         }
-
-
 
     }
 
@@ -110,12 +109,12 @@ public class BruteForceAlgorithmLabeledMultigraph {
         return d;
     }
 
-    private static String[][] findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int[] max,int maxD){
+    private static ArrayList[][] findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int[] max,int maxD){
 
         // c[][] is an array with dimensions the number of layers and the number of cores
         // the value of every element is a list that contains the vertices that are contained in the core
-        String[][] c = new String[max.length][maxD + 1];
-        //do stuff
+        ArrayList[][] c = new ArrayList[max.length][maxD + 1];
+
 
         Multigraph<String, GraphLayerEdge> tempMg = mg;
         int[][] tempDegree = findDegree(tempMg,max.length);
@@ -125,6 +124,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
             // for every core vector j
             for (int j = 0; j <= maxD; j++){
                 ArrayList<Integer> verticesOfCore = new ArrayList<>();
+                // for every vertex k
                 for (int k = 0; k < tempMg.vertexSet().size(); k++){
                     // if core vector k in layer i is bigger than the degree of the vertex k
                     if (tempDegree[i][k] == 0){
@@ -135,13 +135,17 @@ public class BruteForceAlgorithmLabeledMultigraph {
                         tempMg = updateGraph(tempMg, i, k);
                         //find new degrees
                         tempDegree = findDegree(tempMg,max.length);
+                        //clear array list to fill it again
+                        verticesOfCore.clear();
+                        //check previous vertices for changes in degree
                         k = -1;
                     }else {
+                        //add vertex k to the core
                         verticesOfCore.add(k);
                     }
                 }
-                //Array list or String?
-                c[i][j] = verticesOfCore.toString();
+                //System.out.println(verticesOfCore.toString() + "\n");
+                c[i][j] = verticesOfCore;
             }
         }
 
@@ -152,9 +156,12 @@ public class BruteForceAlgorithmLabeledMultigraph {
 
         boolean flag = true;
         while (flag) {
+            if (g.edgeSet().size() == 0){
+                break;
+            }
             for (GraphLayerEdge edge : g.edgeSet()) {
                 if (edge.toString().equals(String.valueOf(layer + 1)) && (Objects.equals(String.valueOf(edge.getV1()), String.valueOf(vertex)) || Objects.equals(String.valueOf(edge.getV2()), String.valueOf(vertex)))) {
-                    System.out.printf("\nEdge: {" +edge.getV1() + ", " + edge.getV2() + "} from layer " + (layer+1) + " is removed\n");
+                    //System.out.printf("\nEdge: {" +edge.getV1() + ", " + edge.getV2() + "} from layer " + (layer+1) + " is removed\n");
                     g.removeEdge(edge);
                     break;
                 } else {
@@ -165,4 +172,5 @@ public class BruteForceAlgorithmLabeledMultigraph {
 
         return g;
     }
+
 }
