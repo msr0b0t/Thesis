@@ -1,5 +1,6 @@
 /*
  * Created by Mary on 13/12/2017.
+ * This is a class that creates labeled edges
  */
 
 import org.jgrapht.graph.DefaultEdge;

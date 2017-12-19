@@ -14,10 +14,11 @@ public class BruteForceAlgorithmLabeledMultigraph {
 
     public static void main(String[] args) throws IOException {
 
-        //create the multigraph
+        //create and print the multigraph
         Multigraph<String, GraphLayerEdge> mg = createMultigraph();
         System.out.println(mg + "\n");
 
+        // find the layers
         List layers = new ArrayList(mg.edgeSet().size());
         int numberOfLayers = 0;
 
@@ -33,6 +34,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
             }
         }
 
+        // find the degree of every vertex for all the layers
         int[][] degree = findDegree(mg, numberOfLayers);
 
         int[] max = new int[numberOfLayers];
@@ -43,7 +45,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
                 if (degree[i][j] > max[i]) {
                     max[i] = degree[i][j];
                 }
-                System.out.println("Layer: " + (i + 1) + " Vertix: " + j + " Degree: " + degree[i][j]);
+                System.out.println("Layer: " + (i + 1) + " Vertex: " + j + " Degree: " + degree[i][j]);
             }
             System.out.println("");
         }
@@ -55,17 +57,18 @@ public class BruteForceAlgorithmLabeledMultigraph {
             }
         }
 
-
+        // find the core decomposition for each layer
         ArrayList[][] coreDecomposition = findCoreDecomposition(mg, max, maxD);
 
         for (int i = 0; i < max.length; i++) {
             for (int j = 0; j <= maxD; j++) {
-                System.out.println("layer: " + (i+1) + " core: " + j + " vertices of the core: " + coreDecomposition[i][j]);
+                System.out.println("Layer: " + (i+1) + " core: " + j + " vertices of the core: " + coreDecomposition[i][j]);
             }
             System.out.println("");
         }
 
-        findMultilayerCoreDecomposition(coreDecomposition, numberOfLayers, maxD);
+        //find the complete core decomposition
+        //findMultilayerCoreDecomposition(coreDecomposition, numberOfLayers, maxD);
     }
 
     private static Multigraph<String, GraphLayerEdge> createMultigraph() throws IOException {
@@ -73,6 +76,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
 
         String line;
 
+        // change the path of the graph
         BufferedReader br = new BufferedReader(new FileReader("graphs/graph3.txt"));
         while ((line = br.readLine()) != null) {
 
@@ -116,7 +120,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
         // the value of every element is a list that contains the vertices that are contained in the core
         ArrayList[][] c = new ArrayList[max.length][maxD + 1];
 
-
+        // make a copy of the graph and find its degree
         Multigraph<String, GraphLayerEdge> tempMg = mg;
         int[][] tempDegree = findDegree(tempMg,max.length);
 
@@ -127,10 +131,10 @@ public class BruteForceAlgorithmLabeledMultigraph {
                 ArrayList<Integer> verticesOfCore = new ArrayList<>();
                 // for every vertex k
                 for (int k = 0; k < tempMg.vertexSet().size(); k++){
-                    // if core vector k in layer i is bigger than the degree of the vertex k
                     if (tempDegree[i][k] == 0){
                         continue;
                     }
+                    // if core vector k in layer i is bigger than the degree of the vertex k
                     if (j > tempDegree[i][k]){
                         //update the tempGraph
                         tempMg = updateGraph(tempMg, i, k);
@@ -172,35 +176,6 @@ public class BruteForceAlgorithmLabeledMultigraph {
         }
 
         return g;
-    }
-
-    private static void findMultilayerCoreDecomposition(ArrayList[][] c, int nol, int nov) {
-
-        int[] defaultK= new int[nol];
-        for (int i = 0; i < nol; i++) {
-            defaultK[i] = 0;
-        }
-        ArrayList<String[]> all_Ks = new ArrayList<>();
-        for (int i = 0; i < Integer.parseInt(new String(new char[nol]).replace("\0", String.valueOf(nov))); i++) {
-            boolean allCool = true;
-            String[] tmp = String.valueOf(i).split("(?!^)");
-            while (tmp.length < nol) tmp = (new ArrayList<>(Arrays.asList(tmp)).add(0, "0")).toArray();
-            for  (int j = nov + 1; j < 10; j++) {
-                if (Arrays.asList(tmp).contains(j)) {
-                    allCool = false;
-                    break;
-                }
-            }
-            if (allCool) all_Ks.add(tmp);
-        }
-
-        for (int i = 0; i < all_Ks.size(); i++) {
-            String[] thisK = all_Ks.get(i);
-            ArrayList allVertices= new ArrayList();
-            for (int j = 0; j < thisK.length; j++) {
-                allVertices.addAll(c[i][Integer.parseInt(thisK[i])]);
-            }
-        }
     }
 
 }
