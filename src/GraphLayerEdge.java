@@ -24,10 +24,6 @@ public class GraphLayerEdge<V> extends DefaultEdge {
         return v2;
     }
 
-//    public String getLabel() {
-//        return label;
-//    }
-
     public String toString() {
         return label;
     }

@@ -65,6 +65,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
             System.out.println("");
         }
 
+        findMultilayerCoreDecomposition(coreDecomposition, numberOfLayers, maxD);
     }
 
     private static Multigraph<String, GraphLayerEdge> createMultigraph() throws IOException {
@@ -171,6 +172,35 @@ public class BruteForceAlgorithmLabeledMultigraph {
         }
 
         return g;
+    }
+
+    private static void findMultilayerCoreDecomposition(ArrayList[][] c, int nol, int nov) {
+
+        int[] defaultK= new int[nol];
+        for (int i = 0; i < nol; i++) {
+            defaultK[i] = 0;
+        }
+        ArrayList<String[]> all_Ks = new ArrayList<>();
+        for (int i = 0; i < Integer.parseInt(new String(new char[nol]).replace("\0", String.valueOf(nov))); i++) {
+            boolean allCool = true;
+            String[] tmp = String.valueOf(i).split("(?!^)");
+            while (tmp.length < nol) tmp = (new ArrayList<>(Arrays.asList(tmp)).add(0, "0")).toArray();
+            for  (int j = nov + 1; j < 10; j++) {
+                if (Arrays.asList(tmp).contains(j)) {
+                    allCool = false;
+                    break;
+                }
+            }
+            if (allCool) all_Ks.add(tmp);
+        }
+
+        for (int i = 0; i < all_Ks.size(); i++) {
+            String[] thisK = all_Ks.get(i);
+            ArrayList allVertices= new ArrayList();
+            for (int j = 0; j < thisK.length; j++) {
+                allVertices.addAll(c[i][Integer.parseInt(thisK[i])]);
+            }
+        }
     }
 
 }

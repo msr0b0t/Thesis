@@ -16,7 +16,7 @@ public class BruteForceAlgorithmSimpleGraph {
 
     public static void main(String[] args) throws IOException {
 
-        //print the graph
+        //create and print the graph
         Graph<String, DefaultEdge> initialGraph = createGraph();
         System.out.println(initialGraph);
 
@@ -24,9 +24,11 @@ public class BruteForceAlgorithmSimpleGraph {
 
         String[][] coreD;
 
+        // find the degree of every vertex, store it in an array list, print the array list
         degree = findDegree(initialGraph);
         System.out.println(degree);
 
+        // max is the greatest degree of a vertex in the graph
         int max = (Integer) Collections.max(degree, null);
 
         coreD = findCoreDecomposition(degree, initialGraph);
@@ -59,6 +61,7 @@ public class BruteForceAlgorithmSimpleGraph {
 
         String line;
 
+        // change path of the graph
         BufferedReader br = new BufferedReader(new FileReader("graphs/graph1.txt"));
         while ((line = br.readLine()) != null) {
 
@@ -109,6 +112,7 @@ public class BruteForceAlgorithmSimpleGraph {
 
 
     private static String[][] findCoreDecomposition(ArrayList d, Graph<String, DefaultEdge> g) throws IOException{
+
         //coreness vector k can be up to the maximum degree of graph
         int max = (Integer) Collections.max(d, null);
 
@@ -143,6 +147,8 @@ public class BruteForceAlgorithmSimpleGraph {
 
 
     private static Graph<String, DefaultEdge> updateGraph(Graph<String, DefaultEdge> g, String v, int size) throws IOException {
+
+        // remove all edges connected to v
         for (int i = 0; i < size; i++){
             if (Objects.equals(v, Integer.toString(i))) {
                 continue;
