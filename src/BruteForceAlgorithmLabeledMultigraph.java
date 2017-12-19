@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Predicate;
 
 
 public class BruteForceAlgorithmLabeledMultigraph {
@@ -68,7 +69,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
         }
 
         //find the complete core decomposition
-        //findMultilayerCoreDecomposition(coreDecomposition, numberOfLayers, maxD);
+        findMultilayerCoreDecomposition(coreDecomposition, numberOfLayers, maxD);
     }
 
     private static Multigraph<String, GraphLayerEdge> createMultigraph() throws IOException {
@@ -176,6 +177,44 @@ public class BruteForceAlgorithmLabeledMultigraph {
         }
 
         return g;
+    }
+
+    private static void findMultilayerCoreDecomposition(ArrayList[][] c, int nol, int nov) {
+
+        // create all_Ks array
+        // all_Ks[i] is e.g.: ['4','5','0']
+        ArrayList<String[]> all_Ks = new ArrayList<>();
+        for (int i = 0; i < Integer.parseInt(new String(new char[nol]).replace("\0", String.valueOf(nov))); i++) {
+            boolean allCool = true;
+            String[] tmp = String.valueOf(i).split("(?!^)");
+            ArrayList<String> tmpArrList = new ArrayList<>(Arrays.asList(tmp));
+            while (tmpArrList.size() < nol) tmpArrList.add(0, "0");
+            for (String aTmpArrList : tmpArrList) {
+                if (Integer.parseInt(aTmpArrList) > nov) {
+                    allCool = false;
+                    break;
+                }
+            }
+            if (allCool) all_Ks.add(tmpArrList.toArray(new String[tmpArrList.size()]));
+        }
+
+        for (String[] k : all_Ks) {
+            ArrayList<Integer> coreDecompositionOfK = new ArrayList<>();
+            coreDecompositionOfK.addAll(c[0][Integer.parseInt(k[0])]);
+            // consider the join of the single cores
+            for (int j = 1; j < k.length; j++) {
+                ArrayList<Integer> thisLayerCore = c[j][Integer.parseInt(k[j])];
+                Predicate<Integer> filter = (x) -> thisLayerCore.indexOf(x) < 0;
+                coreDecompositionOfK.removeIf(filter);
+            }
+            System.out.print("For k = [");
+            for (int l = 0; l < k.length - 1; l++){
+                System.out.print(k[l] + ", ");
+            }
+            System.out.println(k[k.length - 1] + "] the core decomposition is: " + coreDecompositionOfK);
+
+        }
+
     }
 
 }
