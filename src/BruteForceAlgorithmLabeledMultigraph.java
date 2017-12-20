@@ -2,8 +2,6 @@
  * Created by mary on 13/12/2017.
  */
 
-
-
 import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.Multigraph;
 import java.io.BufferedReader;
@@ -22,7 +20,8 @@ public class BruteForceAlgorithmLabeledMultigraph {
         System.out.println(mg + "\n");
 
         // find the layers
-        int numberOfLayers = findLayers(mg);
+        ArrayList layers = findLayers(mg);
+        int numberOfLayers = layers.size();
 
         // find the degree of every vertex for all the layers
         int[][] degree = findDegree(mg, numberOfLayers);
@@ -85,11 +84,11 @@ public class BruteForceAlgorithmLabeledMultigraph {
         return mg;
     }
 
-    protected static int findLayers(Multigraph<String, GraphLayerEdge> mg) {
+    protected static ArrayList findLayers(Multigraph<String, GraphLayerEdge> mg) {
 
         int numberOfLayers = 0;
 
-        List layers = new ArrayList(mg.edgeSet().size());
+        ArrayList<String> layers = new ArrayList(mg.edgeSet().size());
 
         for (int i = 0; i < mg.vertexSet().size(); i++) {
             for (int j = 0; j < mg.vertexSet().size(); j++) {
@@ -102,11 +101,10 @@ public class BruteForceAlgorithmLabeledMultigraph {
                 }
             }
         }
-        return numberOfLayers;
+        return layers;
     }
 
     protected static int[][] findDegree(Multigraph<String, GraphLayerEdge> mg, int nol){
-
 
         int[][] d = new int[nol][mg.vertexSet().size()];
 
@@ -119,7 +117,6 @@ public class BruteForceAlgorithmLabeledMultigraph {
                 }
             }
         }
-
 
         return d;
     }
