@@ -2,6 +2,8 @@
  * Created by mary on 13/12/2017.
  */
 
+
+
 import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.Multigraph;
 import java.io.BufferedReader;
@@ -20,20 +22,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
         System.out.println(mg + "\n");
 
         // find the layers
-        List layers = new ArrayList(mg.edgeSet().size());
-        int numberOfLayers = 0;
-
-        for (int i = 0; i < mg.vertexSet().size(); i++) {
-            for (int j = 0; j < mg.vertexSet().size(); j++) {
-                if (mg.containsEdge(Integer.toString(i), Integer.toString(j))) {
-                    String label = mg.getEdge(Integer.toString(i), Integer.toString(j)).toString();
-                    if (!layers.contains(label)) {
-                        layers.add(label);
-                        numberOfLayers++;
-                    }
-                }
-            }
-        }
+        int numberOfLayers = findLayers(mg);
 
         // find the degree of every vertex for all the layers
         int[][] degree = findDegree(mg, numberOfLayers);
@@ -72,7 +61,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
         findMultilayerCoreDecomposition(coreDecomposition, numberOfLayers, maxD);
     }
 
-    private static Multigraph<String, GraphLayerEdge> createMultigraph() throws IOException {
+    protected static Multigraph<String, GraphLayerEdge> createMultigraph() throws IOException {
         Multigraph<String, GraphLayerEdge> mg = new Multigraph<>(new ClassBasedEdgeFactory<String, GraphLayerEdge>(GraphLayerEdge.class));
 
         String line;
@@ -96,7 +85,27 @@ public class BruteForceAlgorithmLabeledMultigraph {
         return mg;
     }
 
-    private static int[][] findDegree(Multigraph<String, GraphLayerEdge> mg, int nol){
+    protected static int findLayers(Multigraph<String, GraphLayerEdge> mg) {
+
+        int numberOfLayers = 0;
+
+        List layers = new ArrayList(mg.edgeSet().size());
+
+        for (int i = 0; i < mg.vertexSet().size(); i++) {
+            for (int j = 0; j < mg.vertexSet().size(); j++) {
+                if (mg.containsEdge(Integer.toString(i), Integer.toString(j))) {
+                    String label = mg.getEdge(Integer.toString(i), Integer.toString(j)).toString();
+                    if (!layers.contains(label)) {
+                        layers.add(label);
+                        numberOfLayers++;
+                    }
+                }
+            }
+        }
+        return numberOfLayers;
+    }
+
+    protected static int[][] findDegree(Multigraph<String, GraphLayerEdge> mg, int nol){
 
 
         int[][] d = new int[nol][mg.vertexSet().size()];
@@ -115,7 +124,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
         return d;
     }
 
-    private static ArrayList[][] findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int[] max,int maxD){
+    protected static ArrayList[][] findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int[] max,int maxD){
 
         // c[][] is an array with dimensions the number of layers and the number of cores
         // the value of every element is a list that contains the vertices that are contained in the core
@@ -158,7 +167,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
         return c;
     }
 
-    private static Multigraph<String, GraphLayerEdge> updateGraph(Multigraph<String, GraphLayerEdge> g, int layer, int vertex) {
+    protected static Multigraph<String, GraphLayerEdge> updateGraph(Multigraph<String, GraphLayerEdge> g, int layer, int vertex) {
 
         boolean flag = true;
         while (flag) {
@@ -179,7 +188,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
         return g;
     }
 
-    private static void findMultilayerCoreDecomposition(ArrayList[][] c, int nol, int nov) {
+    protected static void findMultilayerCoreDecomposition(ArrayList[][] c, int nol, int nov) {
 
         // create all_Ks array
         // all_Ks[i] is e.g.: ['4','5','0']
