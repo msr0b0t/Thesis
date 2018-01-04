@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.function.Predicate;
 
 public class BfsAlgorithm {
@@ -18,6 +19,7 @@ public class BfsAlgorithm {
 
         //find the layers
         ArrayList<String> layers = BruteForceAlgorithmLabeledMultigraph.findLayers(mg);
+
         int numberOfLayers = layers.size();
 
         // find the complete core decomposition of multigraph
@@ -29,22 +31,35 @@ public class BfsAlgorithm {
 
         ArrayList<Integer> coreDecompositionOfK;
 
+        //layer 1,2...
         ArrayList<String> layers = BruteForceAlgorithmLabeledMultigraph.findLayers(mg);
 
         // find the degree of every vertex for all the layers
         int[][] degree = BruteForceAlgorithmLabeledMultigraph.findDegree(mg, layers.size());
 
-        for (int v : verticesSet) {
+        for (int i = 0; i < verticesSet.size(); i++){
+            int v = verticesSet.get(i);
             for (Object l : layers) {
-                int layer = Integer.parseInt(l.toString());
+                // layer "1" is the layer 0
+                int layer = Integer.parseInt(l.toString()) - 1;
                 int kl = Integer.parseInt(k[layer]);
                 if (degree[layer][v] < kl){
-                    verticesSet.remove(v);
+                    // remove vertex v from the set, because it is not contained in the k-core of the graph
+                    Iterator itr = verticesSet.iterator();
+                    while (itr.hasNext()) {
+                        int x = (Integer)itr.next();
+                        if (x == v) {
+                            itr.remove();
+                            i--;
+                            break;
+                        }
+                    }
                 }
             }
         }
 
         coreDecompositionOfK = verticesSet;
+
         return coreDecompositionOfK;
     }
 
@@ -76,6 +91,7 @@ public class BfsAlgorithm {
                     numberOfNonZeroKl++;
                 }
             }
+            // > or == ?
             if (numberOfNonZeroKl > f.get(k).size()){
                 ArrayList<Integer> fIntersection = new ArrayList<>();
                 ArrayList<String> tempVString = new ArrayList<>(mg.vertexSet());
@@ -108,6 +124,7 @@ public class BfsAlgorithm {
                             f.remove(kTonos);
                             f.put(kTonos, union);
                         }
+
 
                           //typo in paper?
 
