@@ -21,6 +21,7 @@ public class BfsAlgorithm {
 
         // find the complete core decomposition of multigraph
         findCoreDecomposition(mg, numberOfLayers);
+
     }
 
     protected static ArrayList<Integer> kCore(Multigraph<String, GraphLayerEdge> mg, ArrayList<Integer> verticesSet, String[] k) {
@@ -29,6 +30,15 @@ public class BfsAlgorithm {
 
         //layer 1,2...
         ArrayList<String> layers = BruteForceAlgorithmLabeledMultigraph.findLayers(mg);
+
+        //delete all edges from mg of vertices that are not contained in the verticeSet
+        for (String v : mg.vertexSet()) {
+            if (verticesSet.indexOf(Integer.parseInt(v))< 0) {
+                for (int i = 0; i < k.length; i++) {
+                    mg = BruteForceAlgorithmLabeledMultigraph.updateGraph(mg, i, Integer.parseInt(v));
+                }
+            }
+        }
 
         // find the degree of every vertex for all the layers
         int[][] degree = BruteForceAlgorithmLabeledMultigraph.findDegree(mg, layers.size());
@@ -113,9 +123,15 @@ public class BfsAlgorithm {
                         Predicate<Integer> filter = (x) -> tempV.indexOf(x) < 0;
                         fIntersection.removeIf(filter);
                     }
+                } else {
+                    //for the root node we need to get all the vertices of the graph
+                    for (String vertex : mg.vertexSet()){
+                        fIntersection.add(Integer.parseInt(vertex));
+                    }
                 }
                 //{algorithm 1}
                 ArrayList<Integer> coreDecompositionOfK = kCore(mg, fIntersection, k);
+
                 if (coreDecompositionOfK.size() > 0) {
                     if (cores.indexOf(coreDecompositionOfK) < 0) {
                         cores.add(coreDecompositionOfK);
@@ -130,6 +146,9 @@ public class BfsAlgorithm {
                         queue.add(kTonos);
 
                         //f(k') <- f(k') U {Ck}
+                        if (!f.containsKey(kTonos)) {
+                            f.put(kTonos, new ArrayList<>());
+                        }
                         ArrayList<String[]> union = f.get(kTonos);
 
                         // turn Ck/ coreDecompositionOfK from int[] into String[]
@@ -152,13 +171,9 @@ public class BfsAlgorithm {
                     }
                 }
             }
-            //print the core decomposition of k
-            System.out.print("For k = [");
-            for (int l = 0; l < k.length - 1; l++){
-                System.out.print(k[l] + ", ");
-            }
-            System.out.println(k[k.length - 1] + "] the core decomposition is: " + cores);
         }
+        //print the core decomposition of k
+        System.out.println("The core decomposition is: " + cores);
     }
 
 }
