@@ -2,7 +2,10 @@
  * Created by Mary on 19/12/2017.
  */
 
+import org.jgrapht.graph.ClassBasedEdgeFactory;
 import org.jgrapht.graph.Multigraph;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
@@ -11,11 +14,11 @@ public class BfsAlgorithm {
 
     public static void main(String[] args) throws IOException{
         // create and print multigraph
-        Multigraph<String, GraphLayerEdge> mg = BruteForceAlgorithmLabeledMultigraph.createMultigraph();
+        Multigraph<String, GraphLayerEdge> mg = createMultigraph();
         System.out.println(mg + "\n");
 
         //find the layers
-        ArrayList<String> layers = BruteForceAlgorithmLabeledMultigraph.findLayers(mg);
+        ArrayList<String> layers = findLayers(mg);
 
         int numberOfLayers = layers.size();
 
@@ -29,19 +32,19 @@ public class BfsAlgorithm {
         ArrayList<Integer> coreDecompositionOfK;
 
         //layer 1,2...
-        ArrayList<String> layers = BruteForceAlgorithmLabeledMultigraph.findLayers(mg);
+        ArrayList<String> layers = findLayers(mg);
 
         //delete all edges from mg of vertices that are not contained in the verticeSet
         for (String v : mg.vertexSet()) {
             if (verticesSet.indexOf(Integer.parseInt(v))< 0) {
                 for (int i = 0; i < k.length; i++) {
-                    mg = BruteForceAlgorithmLabeledMultigraph.updateGraph(mg, i, Integer.parseInt(v));
+                    mg = updateGraph(mg, i, Integer.parseInt(v));
                 }
             }
         }
 
         // find the degree of every vertex for all the layers
-        int[][] degree = BruteForceAlgorithmLabeledMultigraph.findDegree(mg, layers.size());
+        int[][] degree = findDegree(mg, layers.size());
 
         for (int i = 0; i < verticesSet.size(); i++){
             int v = verticesSet.get(i);
@@ -174,6 +177,88 @@ public class BfsAlgorithm {
         }
         //print the core decomposition of k
         System.out.println("The core decomposition is: " + cores);
+    }
+
+    protected static Multigraph<String, GraphLayerEdge> createMultigraph() throws IOException {
+        Multigraph<String, GraphLayerEdge> mg = new Multigraph<>(new ClassBasedEdgeFactory<String, GraphLayerEdge>(GraphLayerEdge.class));
+
+        String line;
+
+        // change the path of the graph
+        BufferedReader br = new BufferedReader(new FileReader("graphs/graph3.txt"));
+        while ((line = br.readLine()) != null) {
+
+            //read each line and set the three strings in three variables
+            String[] parts = line.split("\\s+");
+            String v1 = parts[0];
+            String v2 = parts[1];
+            String v3 = parts[2];
+
+            mg.addVertex(v1);
+            mg.addVertex(v2);
+
+            mg.addEdge(v1, v2, new GraphLayerEdge<>(v1, v2, v3));
+
+        }
+        return mg;
+    }
+
+    protected static ArrayList findLayers(Multigraph<String, GraphLayerEdge> mg) {
+
+        int numberOfLayers = 0;
+
+        ArrayList<String> layers = new ArrayList(mg.edgeSet().size());
+
+        for (int i = 0; i < mg.vertexSet().size(); i++) {
+            for (int j = 0; j < mg.vertexSet().size(); j++) {
+                if (mg.containsEdge(Integer.toString(i), Integer.toString(j))) {
+                    String label = mg.getEdge(Integer.toString(i), Integer.toString(j)).toString();
+                    if (!layers.contains(label)) {
+                        layers.add(label);
+                        numberOfLayers++;
+                    }
+                }
+            }
+        }
+        return layers;
+    }
+
+    protected static int[][] findDegree(Multigraph<String, GraphLayerEdge> mg, int nol){
+
+        int[][] d = new int[nol][mg.vertexSet().size()];
+
+        for (int i = 0; i < mg.vertexSet().size(); i++) {
+            for (int j = 0; j < mg.vertexSet().size(); j++) {
+                Set setOfEdges = mg.getAllEdges(Integer.toString(i), Integer.toString(j));
+                for (int k = 0; k < setOfEdges.size(); k++) {
+                    int l = Integer.parseInt(setOfEdges.toArray()[k].toString());
+                    d[l - 1][i]++;
+                }
+            }
+        }
+
+        return d;
+    }
+
+    protected static Multigraph<String, GraphLayerEdge> updateGraph(Multigraph<String, GraphLayerEdge> g, int layer, int vertex) {
+
+        boolean flag = true;
+        while (flag) {
+            if (g.edgeSet().size() == 0){
+                break;
+            }
+            for (GraphLayerEdge edge : g.edgeSet()) {
+                if (edge.toString().equals(String.valueOf(layer + 1)) && (Objects.equals(String.valueOf(edge.getV1()), String.valueOf(vertex)) || Objects.equals(String.valueOf(edge.getV2()), String.valueOf(vertex)))) {
+                    //System.out.printf("\nEdge: {" +edge.getV1() + ", " + edge.getV2() + "} from layer " + (layer+1) + " is removed\n");
+                    g.removeEdge(edge);
+                    break;
+                } else {
+                    flag = false;
+                }
+            }
+        }
+
+        return g;
     }
 
 }
