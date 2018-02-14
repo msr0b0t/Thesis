@@ -17,7 +17,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
 
         //create and print the multigraph
         Multigraph<String, GraphLayerEdge> mg = createMultigraph();
-        System.out.println(mg + "\n");
+//        System.out.println(mg + "\n");
 
         // find the layers
         ArrayList layers = findLayers(mg);
@@ -175,6 +175,7 @@ public class BruteForceAlgorithmLabeledMultigraph {
                 if (edge.toString().equals(String.valueOf(layer + 1)) && (Objects.equals(String.valueOf(edge.getV1()), String.valueOf(vertex)) || Objects.equals(String.valueOf(edge.getV2()), String.valueOf(vertex)))) {
                     //System.out.printf("\nEdge: {" +edge.getV1() + ", " + edge.getV2() + "} from layer " + (layer+1) + " is removed\n");
                     g.removeEdge(edge);
+                    flag = true;
                     break;
                 } else {
                     flag = false;

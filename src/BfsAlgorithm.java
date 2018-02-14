@@ -20,31 +20,39 @@ public class BfsAlgorithm {
         //find the layers
         ArrayList<String> layers = findLayers(mg);
 
-        int numberOfLayers = layers.size();
-
         // find the complete core decomposition of multigraph
-        findCoreDecomposition(mg, numberOfLayers);
+        findCoreDecomposition(mg, layers);
 
     }
 
-    protected static ArrayList<Integer> kCore(Multigraph<String, GraphLayerEdge> mg, ArrayList<Integer> verticesSet, String[] k) {
+    protected static ArrayList<Integer> kCore(Multigraph<String, GraphLayerEdge> mg, ArrayList<Integer> verticesSet, String[] k, ArrayList<String> layers) {
 
         ArrayList<Integer> coreDecompositionOfK;
 
-        //layer 1,2...
-        ArrayList<String> layers = findLayers(mg);
+        //copy mg to tempg
+        Multigraph<String, GraphLayerEdge> tempg = new Multigraph<>(new ClassBasedEdgeFactory<String, GraphLayerEdge>(GraphLayerEdge.class));
+        org.jgrapht.Graphs.addGraph(tempg, mg);
 
         //delete all edges from mg of vertices that are not contained in the verticeSet
-        for (String v : mg.vertexSet()) {
-            if (verticesSet.indexOf(Integer.parseInt(v))< 0) {
+        for (String v : tempg.vertexSet()) {
+            //if (verticesSet.indexOf(Integer.parseInt(v)) < 0) {
+            if (!verticesSet.contains(Integer.parseInt(v))) {
                 for (int i = 0; i < k.length; i++) {
-                    mg = updateGraph(mg, i, Integer.parseInt(v));
+                    tempg = updateGraph(tempg, i, Integer.parseInt(v));
                 }
             }
         }
 
         // find the degree of every vertex for all the layers
-        int[][] degree = findDegree(mg, layers.size());
+        int[][] degree = findDegree(tempg, layers.size());
+
+        System.out.print("k = ");
+        for (int i = 0; i < k.length; i++) {
+            System.out.print(k[i]);
+        }
+        System.out.println();
+        System.out.print("Set = ");
+        System.out.println(verticesSet);
 
         for (int i = 0; i < verticesSet.size(); i++){
             int v = verticesSet.get(i);
@@ -59,7 +67,12 @@ public class BfsAlgorithm {
                         int x = (Integer)itr.next();
                         if (x == v) {
                             itr.remove();
-                            i--;
+                            tempg = updateGraph(tempg, layer, v);
+                            // count degrees again
+                            degree = findDegree(tempg,layers.size());
+                            System.out.println(" removed " + v + " from layer " + layer);
+                            //go to the beginning
+                            i = 0;
                             break;
                         }
                     }
@@ -67,12 +80,22 @@ public class BfsAlgorithm {
             }
         }
 
+        // the set cannot contain only one vertex
+        if (verticesSet.size() == 1){
+            verticesSet.clear();
+        }
+
+        System.out.println(verticesSet);
+        System.out.println();
+
         coreDecompositionOfK = verticesSet;
 
         return coreDecompositionOfK;
     }
 
-    protected static void findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int numberOfLayers) {
+    protected static void findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, ArrayList<String> layers) {
+
+        int numberOfLayers = layers.size();
 
         //the set of all non empty cores is a list of lists e.g.: {{1, 2, 3}, {0, 2, 4}} where every list is a set of vertices
         ArrayList<ArrayList<Integer>> cores = new ArrayList<>();
@@ -133,8 +156,7 @@ public class BfsAlgorithm {
                     }
                 }
                 //{algorithm 1}
-                ArrayList<Integer> coreDecompositionOfK = kCore(mg, fIntersection, k);
-
+                ArrayList<Integer> coreDecompositionOfK = kCore(mg, fIntersection, k, layers);
                 if (coreDecompositionOfK.size() > 0) {
                     if (cores.indexOf(coreDecompositionOfK) < 0) {
                         cores.add(coreDecompositionOfK);
@@ -148,11 +170,9 @@ public class BfsAlgorithm {
                         //enqueue kTonos into q
                         queue.add(kTonos);
 
-                        //f(k') <- f(k') U {Ck}
                         if (!f.containsKey(kTonos)) {
                             f.put(kTonos, new ArrayList<>());
                         }
-                        ArrayList<String[]> union = f.get(kTonos);
 
                         // turn Ck/ coreDecompositionOfK from int[] into String[]
                         String[] cString = new String[coreDecompositionOfK.size()];
@@ -161,16 +181,11 @@ public class BfsAlgorithm {
                             cString[i] = String.valueOf(el);
                             i++;
                         }
-                        //add cString to the union
-                        union.add(cString);
 
-                        // get all the distinct elements of the union
-                        HashSet<String[]> hs = new HashSet<>();
-                        hs.addAll(union);
-                        union.clear();
-                        union.addAll(hs);
-
-                        f.put(kTonos, union);
+                        //f(k') <- f(k') U {Ck}
+                        if (!f.get(kTonos).contains(cString)) {
+                            f.get(kTonos).add(cString);
+                        }
                     }
                 }
             }
@@ -251,6 +266,7 @@ public class BfsAlgorithm {
                 if (edge.toString().equals(String.valueOf(layer + 1)) && (Objects.equals(String.valueOf(edge.getV1()), String.valueOf(vertex)) || Objects.equals(String.valueOf(edge.getV2()), String.valueOf(vertex)))) {
                     //System.out.printf("\nEdge: {" +edge.getV1() + ", " + edge.getV2() + "} from layer " + (layer+1) + " is removed\n");
                     g.removeEdge(edge);
+                    flag = true;
                     break;
                 } else {
                     flag = false;
