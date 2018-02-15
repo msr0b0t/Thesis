@@ -112,8 +112,8 @@ public class BruteForceAlgorithmLabeledMultigraph {
             for (int j = 0; j < mg.vertexSet().size(); j++) {
                 Set setOfEdges = mg.getAllEdges(Integer.toString(i), Integer.toString(j));
                 for (int k = 0; k < setOfEdges.size(); k++) {
-                            int l = Integer.parseInt(setOfEdges.toArray()[k].toString());
-                            d[l - 1][i]++;
+                    int l = Integer.parseInt(setOfEdges.toArray()[k].toString());
+                    d[l - 1][i]++;
                 }
             }
         }
