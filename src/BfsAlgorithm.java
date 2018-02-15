@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 
+
 public class BfsAlgorithm {
 
     public static void main(String[] args) throws IOException{
@@ -46,14 +47,6 @@ public class BfsAlgorithm {
         // find the degree of every vertex for all the layers
         int[][] degree = findDegree(tempg, layers.size());
 
-        System.out.print("k = ");
-        for (int i = 0; i < k.length; i++) {
-            System.out.print(k[i]);
-        }
-        System.out.println();
-        System.out.print("Set = ");
-        System.out.println(verticesSet);
-
         for (int i = 0; i < verticesSet.size(); i++){
             int v = verticesSet.get(i);
             for (Object l : layers) {
@@ -70,7 +63,6 @@ public class BfsAlgorithm {
                             tempg = updateGraph(tempg, layer, v);
                             // count degrees again
                             degree = findDegree(tempg,layers.size());
-                            System.out.println(" removed " + v + " from layer " + layer);
                             //go to the beginning
                             i = 0;
                             break;
@@ -84,9 +76,6 @@ public class BfsAlgorithm {
         if (verticesSet.size() == 1){
             verticesSet.clear();
         }
-
-        System.out.println(verticesSet);
-        System.out.println();
 
         coreDecompositionOfK = verticesSet;
 
@@ -127,21 +116,22 @@ public class BfsAlgorithm {
                     numberOfNonZeroKl++;
                 }
             }
+
             //{corollary 2}
-            if (numberOfNonZeroKl == f.get(k).size()){
+            if (numberOfNonZeroKl == getValue(f, k).size()){
 
                 //{corollary 1}
                 //fIntersection is a set of vertices
                 ArrayList<Integer> fIntersection = new ArrayList<>();
-                if (f.get(k).size() > 0) {
-                    String[] tempVString0 = f.get(k).get(0);
+                if (getValue(f, k).size() > 0) {
+                    String[] tempVString0 = getValue(f, k).get(0);
                     ArrayList<Integer> tempV0 = new ArrayList<>();
                     for (String aTempVString : tempVString0) {
                         tempV0.add(Integer.parseInt(aTempVString));
                     }
                     fIntersection.addAll(tempV0);
-                    for (int i = 1; i < f.get(k).size(); i++) {
-                        String[] tempVString = f.get(k).get(i);
+                    for (int i = 1; i < getValue(f, k).size(); i++) {
+                        String[] tempVString = getValue(f, k).get(i);
                         ArrayList<Integer> tempV = new ArrayList<>();
                         for (String aTempVString : tempVString) {
                             tempV.add(Integer.parseInt(aTempVString));
@@ -155,6 +145,7 @@ public class BfsAlgorithm {
                         fIntersection.add(Integer.parseInt(vertex));
                     }
                 }
+
                 //{algorithm 1}
                 ArrayList<Integer> coreDecompositionOfK = kCore(mg, fIntersection, k, layers);
                 if (coreDecompositionOfK.size() > 0) {
@@ -168,9 +159,12 @@ public class BfsAlgorithm {
                         kTonos[layer] = String.valueOf(Integer.parseInt(kTonos[layer]) + 1);
 
                         //enqueue kTonos into q
-                        queue.add(kTonos);
+                        if (!containsStringArray(queue, kTonos)){
+                            queue.add(kTonos);
+                        }
 
-                        if (!f.containsKey(kTonos)) {
+                        // if f(kTonos) is empty add a new arraylist
+                        if (!containsKeyArray(f, kTonos)){
                             f.put(kTonos, new ArrayList<>());
                         }
 
@@ -183,9 +177,7 @@ public class BfsAlgorithm {
                         }
 
                         //f(k') <- f(k') U {Ck}
-                        if (!f.get(kTonos).contains(cString)) {
-                            f.get(kTonos).add(cString);
-                        }
+                        f = addValue(f, kTonos, cString);
                     }
                 }
             }
@@ -275,6 +267,44 @@ public class BfsAlgorithm {
         }
 
         return g;
+    }
+
+    protected static boolean containsStringArray(List<String[]> list, String[] probe){
+        for(String[] element: list){
+            if (Arrays.deepEquals(element, probe)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected static boolean containsKeyArray(HashMap<String[], ArrayList<String[]>> hm, String[] k){
+        for (String[] key : hm.keySet()){
+            if (Arrays.deepEquals(key, k)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected static ArrayList<String[]> getValue(HashMap<String[], ArrayList<String[]>> hm, String[] k){
+        for (String[] key : hm.keySet()){
+            if (Arrays.deepEquals(key, k)){
+                return hm.get(key);
+            }
+        }
+        ArrayList<String[]> values = new ArrayList<>();
+        return values;
+    }
+
+    protected static HashMap<String[], ArrayList<String[]>> addValue(HashMap<String[], ArrayList<String[]>> hm, String[] k, String[] value){
+        for (String[] key : hm.keySet()) {
+            if (Arrays.deepEquals(key, k)) {
+                hm.get(key).add(value);
+                return hm;
+            }
+        }
+        return hm;
     }
 
 }
