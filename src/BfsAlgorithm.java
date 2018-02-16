@@ -36,7 +36,6 @@ public class BfsAlgorithm {
 
         //delete all edges from mg of vertices that are not contained in the verticeSet
         for (String v : tempg.vertexSet()) {
-            //if (verticesSet.indexOf(Integer.parseInt(v)) < 0) {
             if (!verticesSet.contains(Integer.parseInt(v))) {
                 for (int i = 0; i < k.length; i++) {
                     tempg = updateGraph(tempg, i, Integer.parseInt(v));
@@ -53,7 +52,7 @@ public class BfsAlgorithm {
                 // layer "1" is the layer 0
                 int layer = Integer.parseInt(l.toString()) - 1;
                 int kl = Integer.parseInt(k[layer]);
-                if (degree[layer][v] < kl){
+                if (degree[layer][v] < kl) {
                     // remove vertex v from the set, because it is not contained in the k-core of the graph
                     Iterator itr = verticesSet.iterator();
                     while (itr.hasNext()) {
@@ -62,7 +61,7 @@ public class BfsAlgorithm {
                             itr.remove();
                             tempg = updateGraph(tempg, layer, v);
                             // count degrees again
-                            degree = findDegree(tempg,layers.size());
+                            degree = findDegree(tempg, layers.size());
                             //go to the beginning
                             i = 0;
                             break;
