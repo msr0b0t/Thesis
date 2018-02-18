@@ -11,18 +11,29 @@ import java.util.*;
 
 public class BruteForceAlgorithm {
 
+    private static Multigraph<String, GraphLayerEdge> mg;
+    private static ArrayList<String> layers = new ArrayList<>();
+    private static int numberOfVertices = 0;
+    private static int[][] degree;
+
     public static void main(String[] args) throws IOException {
 
-        //create and print the multigraph
-        Multigraph<String, GraphLayerEdge> mg = Utilities.createMultigraph("graphs/example.txt");
-        System.out.println(mg + "\n");
+        //create the multigraph
+        mg = Utilities.createMultigraph("graphs/test.txt");
+        numberOfVertices = mg.vertexSet().size();
 
-        // find the layers
-        ArrayList layers = findLayers(mg);
-        int numberOfLayers = layers.size();
+        //find the layers
+        BufferedReader br = new BufferedReader(new FileReader("graphs/test.txt"));
+        String line = br.readLine();
+        int numberOfLayers = Integer.parseInt(line.split("\\s+")[0]);
+        for (int i = 1; i < numberOfLayers + 1; i += 1) {
+            layers.add(String.valueOf(i));
+        }
+        br.close();
 
         // find the degree of every vertex for all the layers
-        int[][] degree = findDegree(mg, numberOfLayers);
+        degree = new int[layers.size()][numberOfVertices];
+        findDegree(mg);
 
         int[] max = new int[numberOfLayers];
 
@@ -46,38 +57,27 @@ public class BruteForceAlgorithm {
         findCoreDecomposition(mg, numberOfLayers, maxD);
     }
 
-    private static ArrayList findLayers(Multigraph<String, GraphLayerEdge> mg) {
+    private static void findDegree(Multigraph<String, GraphLayerEdge> tempG) {
 
-        ArrayList<String> layers = new ArrayList(mg.edgeSet().size());
-
-        for (int i = 0; i < mg.vertexSet().size(); i++) {
-            for (int j = 0; j < mg.vertexSet().size(); j++) {
-                if (mg.containsEdge(Integer.toString(i), Integer.toString(j))) {
-                    String label = mg.getEdge(Integer.toString(i), Integer.toString(j)).toString();
-                    if (!layers.contains(label)) {
-                        layers.add(label);
-                    }
-                }
+        for (int i = 0; i < layers.size(); i++){
+            for (int j = 0; j < numberOfVertices; j++){
+                degree[i][j] = 0;
             }
         }
-        return layers;
-    }
 
-    private static int[][] findDegree(Multigraph<String, GraphLayerEdge> mg, int nol){
-
-        int[][] d = new int[nol][mg.vertexSet().size()];
-
-        for (int i = 0; i < mg.vertexSet().size(); i++) {
-            for (int j = 0; j < mg.vertexSet().size(); j++) {
-                Set setOfEdges = mg.getAllEdges(Integer.toString(i), Integer.toString(j));
+        for (int i = 0; i < numberOfVertices; i++) {
+            for (int j = 0; j < numberOfVertices; j++) {
+                Set<GraphLayerEdge> setOfEdges = tempG.getAllEdges(Integer.toString(i), Integer.toString(j));
+                if (setOfEdges == null) {
+                    continue;
+                }
                 for (int k = 0; k < setOfEdges.size(); k++) {
                     int l = Integer.parseInt(setOfEdges.toArray()[k].toString());
-                    d[l - 1][i]++;
+                    degree[l - 1][i]++;
                 }
             }
         }
 
-        return d;
     }
 
     private static void findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int nol, int nov){
@@ -103,11 +103,6 @@ public class BruteForceAlgorithm {
 
         // make a copy of the graph and find its degree
         Multigraph<String, GraphLayerEdge> tempMg = new Multigraph<>(new ClassBasedEdgeFactory<String, GraphLayerEdge>(GraphLayerEdge.class));
-        org.jgrapht.Graphs.addGraph(tempMg, mg);
-
-        // find the degree of every vertex for all the layers
-        int[][] degree;
-
 
         for (String[] k : all_Ks) {
             org.jgrapht.Graphs.addGraph(tempMg, mg);
@@ -115,7 +110,7 @@ public class BruteForceAlgorithm {
             for (String v : tempMg.vertexSet()){
                 verticesSet.add(Integer.parseInt(v));
             }
-            degree = findDegree(tempMg, nol);
+            findDegree(tempMg);
             for (int i = 0; i < verticesSet.size(); i++){
                 int v = verticesSet.get(i);
                 for (int l = 0; l < nol; l++) {
@@ -131,7 +126,7 @@ public class BruteForceAlgorithm {
                                     tempMg = Utilities.updateGraph(tempMg, layer, v);
                                 }
                                 // count degrees again
-                                degree = findDegree(tempMg, nol);
+                                findDegree(tempMg);
                                 //go to the beginning
                                 i = 0;
                                 break;

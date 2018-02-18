@@ -20,11 +20,11 @@ public class BfsAlgorithm {
 
     public static void main(String[] args) throws IOException{
         // create and print multigraph
-        mg = Utilities.createMultigraph("graphs/homo.txt");
+        mg = Utilities.createMultigraph("graphs/test.txt");
         numberOfVertices = mg.vertexSet().size();
 
         //find the layers
-        BufferedReader br = new BufferedReader(new FileReader("graphs/homo.txt"));
+        BufferedReader br = new BufferedReader(new FileReader("graphs/test.txt"));
         String line = br.readLine();
         int numberOfLayers = Integer.parseInt(line.split("\\s+")[0]);
         for (int i = 1; i < numberOfLayers + 1; i += 1) {
@@ -53,7 +53,7 @@ public class BfsAlgorithm {
         for (String v : tempg.vertexSet()) {
             if (!verticesSet.contains(Integer.parseInt(v))) {
                 for (int i = 0; i < layers.size(); i++) {
-                    updateDegree(i, Integer.parseInt(v));
+                    updateDegree(tempg, i, Integer.parseInt(v));
                     tempg = Utilities.updateGraph(tempg, i, Integer.parseInt(v));
                 }
             }
@@ -73,7 +73,7 @@ public class BfsAlgorithm {
                         if (x == v) {
                             itr.remove();
                             // count degrees again
-                            updateDegree(layer, v);
+                            updateDegree(tempg, layer, v);
                             // update graph
                             tempg = Utilities.updateGraph(tempg, layer, v);
                             //go to the beginning
@@ -196,7 +196,7 @@ public class BfsAlgorithm {
             }
         }
         // print the core decomposition of k
-        //System.out.println("The core decomposition is: " + cores);
+        System.out.println("The core decomposition is: " + cores);
         // print the number of cores
         System.out.println(cores.size());
     }
@@ -223,12 +223,12 @@ public class BfsAlgorithm {
         }
     }
 
-    private static void updateDegree(int layer, int vertex) {
+    private static void updateDegree(Multigraph<String, GraphLayerEdge> tempg, int layer, int vertex) {
 
         degree[layer][vertex] = 0;
 
-        for (String v : mg.vertexSet()){
-            Set setOfEdges = mg.getAllEdges(v, Integer.toString(vertex));
+        for (String v : tempg.vertexSet()){
+            Set setOfEdges = tempg.getAllEdges(v, Integer.toString(vertex));
             if (setOfEdges == null){
                 continue;
             }
