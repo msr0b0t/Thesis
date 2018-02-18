@@ -13,14 +13,17 @@ import java.util.function.Predicate;
 
 public class BfsAlgorithm {
 
+    private static Multigraph<String, GraphLayerEdge> mg;
+    private static ArrayList<String> layers = new ArrayList<>();
+    private static int numberOfVertices = 0;
+    private static int[][] degree;
+
     public static void main(String[] args) throws IOException{
         // create and print multigraph
-        Multigraph<String, GraphLayerEdge> mg = createMultigraph();
-        //System.out.println(mg + "\n");
+        mg = Utilities.createMultigraph("graphs/homo.txt");
+        numberOfVertices = mg.vertexSet().size();
 
         //find the layers
-        ArrayList<String> layers = new ArrayList<>(); //findLayers(mg);
-
         BufferedReader br = new BufferedReader(new FileReader("graphs/homo.txt"));
         String line = br.readLine();
         int numberOfLayers = Integer.parseInt(line.split("\\s+")[0]);
@@ -29,15 +32,14 @@ public class BfsAlgorithm {
         }
         br.close();
 
+        degree = new int[layers.size()][numberOfVertices];
+
         // find the complete core decomposition of multigraph
-        findCoreDecomposition(mg, layers);
+        findCoreDecomposition();
 
     }
 
-    protected static ArrayList<Integer> kCore(Multigraph<String, GraphLayerEdge> mg, ArrayList<Integer> verticesSet, String[] k, ArrayList<String> layers) {
-
-        int nov = mg.vertexSet().size();
-
+    private static ArrayList<Integer> kCore(ArrayList<Integer> verticesSet, String[] k) {
         ArrayList<Integer> coreDecompositionOfK;
 
         //copy mg to tempg
@@ -45,14 +47,14 @@ public class BfsAlgorithm {
         org.jgrapht.Graphs.addGraph(tempg, mg);
 
         // find the degree of every vertex for all the layers
-        int[][] degree = findDegree(mg, layers.size(), nov);
+        findDegree();
 
         //delete all edges from mg of vertices that are not contained in the verticeSet
         for (String v : tempg.vertexSet()) {
             if (!verticesSet.contains(Integer.parseInt(v))) {
                 for (int i = 0; i < layers.size(); i++) {
-                    degree = updateDegree(mg, i, Integer.parseInt(v), degree);
-                    tempg = updateGraph(tempg, i, Integer.parseInt(v));
+                    updateDegree(i, Integer.parseInt(v));
+                    tempg = Utilities.updateGraph(tempg, i, Integer.parseInt(v));
                 }
             }
         }
@@ -71,9 +73,9 @@ public class BfsAlgorithm {
                         if (x == v) {
                             itr.remove();
                             // count degrees again
-                            degree = updateDegree(mg, layer, v, degree);
+                            updateDegree(layer, v);
                             // update graph
-                            tempg = updateGraph(tempg, layer, v);
+                            tempg = Utilities.updateGraph(tempg, layer, v);
                             //go to the beginning
                             i = 0;
                             break;
@@ -93,7 +95,7 @@ public class BfsAlgorithm {
         return coreDecompositionOfK;
     }
 
-    protected static void findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, ArrayList<String> layers) {
+    private static void findCoreDecomposition() {
 
         int numberOfLayers = layers.size();
 
@@ -129,20 +131,20 @@ public class BfsAlgorithm {
             }
 
             //{corollary 2}
-            if (numberOfNonZeroKl == getValue(f, k).size()){
+            if (numberOfNonZeroKl == Utilities.getValue(f, k).size()){
 
                 //{corollary 1}
                 //fIntersection is a set of vertices
                 ArrayList<Integer> fIntersection = new ArrayList<>();
-                if (getValue(f, k).size() > 0) {
-                    String[] tempVString0 = getValue(f, k).get(0);
+                if (Utilities.getValue(f, k).size() > 0) {
+                    String[] tempVString0 = Utilities.getValue(f, k).get(0);
                     ArrayList<Integer> tempV0 = new ArrayList<>();
                     for (String aTempVString : tempVString0) {
                         tempV0.add(Integer.parseInt(aTempVString));
                     }
                     fIntersection.addAll(tempV0);
-                    for (int i = 1; i < getValue(f, k).size(); i++) {
-                        String[] tempVString = getValue(f, k).get(i);
+                    for (int i = 1; i < Utilities.getValue(f, k).size(); i++) {
+                        String[] tempVString = Utilities.getValue(f, k).get(i);
                         ArrayList<Integer> tempV = new ArrayList<>();
                         for (String aTempVString : tempVString) {
                             tempV.add(Integer.parseInt(aTempVString));
@@ -158,7 +160,7 @@ public class BfsAlgorithm {
                 }
 
                 //{algorithm 1}
-                ArrayList<Integer> coreDecompositionOfK = kCore(mg, fIntersection, k, layers);
+                ArrayList<Integer> coreDecompositionOfK = kCore(fIntersection, k);
                 if (coreDecompositionOfK.size() > 0) {
                     if (cores.indexOf(coreDecompositionOfK) < 0) {
                         cores.add(coreDecompositionOfK);
@@ -170,12 +172,12 @@ public class BfsAlgorithm {
                         kTonos[layer] = String.valueOf(Integer.parseInt(kTonos[layer]) + 1);
 
                         //enqueue kTonos into q
-                        if (!containsStringArray(queue, kTonos)){
+                        if (!Utilities.containsStringArray(queue, kTonos)){
                             queue.add(kTonos);
                         }
 
                         // if f(kTonos) is empty add a new arraylist
-                        if (!containsKeyArray(f, kTonos)){
+                        if (!Utilities.containsKeyArray(f, kTonos)){
                             f.put(kTonos, new ArrayList<>());
                         }
 
@@ -188,89 +190,42 @@ public class BfsAlgorithm {
                         }
 
                         //f(k') <- f(k') U {Ck}
-                        f = addValue(f, kTonos, cString);
+                        f = Utilities.addValue(f, kTonos, cString);
                     }
                 }
             }
         }
-        //print the core decomposition of k
-        System.out.println("The core decomposition is: " + cores);
-        //System.out.println(cores.size());
+        // print the core decomposition of k
+        //System.out.println("The core decomposition is: " + cores);
+        // print the number of cores
+        System.out.println(cores.size());
     }
 
-    protected static Multigraph<String, GraphLayerEdge> createMultigraph() throws IOException {
-        Multigraph<String, GraphLayerEdge> mg = new Multigraph<>(new ClassBasedEdgeFactory<String, GraphLayerEdge>(GraphLayerEdge.class));
-        String line;
+    private static void findDegree() {
 
-        // change the path of the graph
-        BufferedReader br = new BufferedReader(new FileReader("graphs/homo.txt"));
-        line = br.readLine();
-        String[] parts = line.split("\\s+");
-        String v1 = parts[2];
-        for (int i = 0; i < Integer.parseInt(v1); i++) mg.addVertex(String.valueOf(i));
-        while ((line = br.readLine()) != null) {
-
-            //read each line and set the three strings in three variables
-            parts = line.split("\\s+");
-            v1 = String.valueOf(Integer.parseInt(parts[1]) - 1);
-            String v2 = String.valueOf(Integer.parseInt(parts[2]) - 1);
-            String v3 = parts[0];
-            mg.addEdge(v1, v2, new GraphLayerEdge<>(v1, v2, v3));
-
-        }
-        br.close();
-        return mg;
-    }
-
-    protected static int[][] findDegree(Multigraph<String, GraphLayerEdge> mg, int nol, int nov) {
-
-        int[][] d = new int[nol][nov];
-        for (int i = 0; i < nol; i++){
-            for (int j = 0; j < nov; j++){
-                d[i][j] = 0;
+        for (int i = 0; i < layers.size(); i++){
+            for (int j = 0; j < numberOfVertices; j++){
+                degree[i][j] = 0;
             }
         }
 
-        for (int i = 0; i < nov; i++) {
-            for (int j = 0; j < nov; j++) {
+        for (int i = 0; i < numberOfVertices; i++) {
+            for (int j = 0; j < numberOfVertices; j++) {
                 Set<GraphLayerEdge> setOfEdges = mg.getAllEdges(Integer.toString(i), Integer.toString(j));
                 if (setOfEdges == null) {
                     continue;
                 }
                 for (int k = 0; k < setOfEdges.size(); k++) {
                     int l = Integer.parseInt(setOfEdges.toArray()[k].toString());
-                    d[l - 1][i]++;
+                    degree[l - 1][i]++;
                 }
             }
         }
-
-        return d;
     }
 
-    protected static Multigraph<String, GraphLayerEdge> updateGraph(Multigraph<String, GraphLayerEdge> g, int layer, int vertex) {
+    private static void updateDegree(int layer, int vertex) {
 
-        boolean flag = true;
-        while (flag) {
-            if (g.edgeSet().size() == 0){
-                break;
-            }
-            for (GraphLayerEdge edge : g.edgeSet()) {
-                if (edge.toString().equals(String.valueOf(layer + 1)) && (Objects.equals(String.valueOf(edge.getV1()), String.valueOf(vertex)) || Objects.equals(String.valueOf(edge.getV2()), String.valueOf(vertex)))) {
-                    g.removeEdge(edge);
-                    flag = true;
-                    break;
-                } else {
-                    flag = false;
-                }
-            }
-        }
-
-        return g;
-    }
-
-    protected static int[][] updateDegree(Multigraph<String,GraphLayerEdge> mg, int layer, int vertex, int[][] d) {
-
-        d[layer][vertex] = 0;
+        degree[layer][vertex] = 0;
 
         for (String v : mg.vertexSet()){
             Set setOfEdges = mg.getAllEdges(v, Integer.toString(vertex));
@@ -279,50 +234,10 @@ public class BfsAlgorithm {
             }
             for (Object edge: setOfEdges){
                 if (edge.toString().equals(String.valueOf(layer + 1))){
-                    d[layer][Integer.parseInt(v)] --;
+                    degree[layer][Integer.parseInt(v)] --;
                 }
             }
 
         }
-        return d;
     }
-
-    protected static boolean containsStringArray(List<String[]> list, String[] probe) {
-        for(String[] element: list){
-            if (Arrays.deepEquals(element, probe)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected static boolean containsKeyArray(HashMap<String[], ArrayList<String[]>> hm, String[] k) {
-        for (String[] key : hm.keySet()){
-            if (Arrays.deepEquals(key, k)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected static ArrayList<String[]> getValue(HashMap<String[], ArrayList<String[]>> hm, String[] k) {
-        for (String[] key : hm.keySet()){
-            if (Arrays.deepEquals(key, k)){
-                return hm.get(key);
-            }
-        }
-        ArrayList<String[]> values = new ArrayList<>();
-        return values;
-    }
-
-    protected static HashMap<String[], ArrayList<String[]>> addValue(HashMap<String[], ArrayList<String[]>> hm, String[] k, String[] value) {
-        for (String[] key : hm.keySet()) {
-            if (Arrays.deepEquals(key, k)) {
-                hm.get(key).add(value);
-                return hm;
-            }
-        }
-        return hm;
-    }
-
 }

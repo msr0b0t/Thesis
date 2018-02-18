@@ -1,5 +1,5 @@
 /*
- * Created by mary on 13/12/2017.
+ * Created by Mary on 13/12/2017.
  */
 
 import org.jgrapht.graph.ClassBasedEdgeFactory;
@@ -8,15 +8,13 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Predicate;
-
 
 public class BruteForceAlgorithm {
 
     public static void main(String[] args) throws IOException {
 
         //create and print the multigraph
-        Multigraph<String, GraphLayerEdge> mg = createMultigraph();
+        Multigraph<String, GraphLayerEdge> mg = Utilities.createMultigraph("graphs/example.txt");
         System.out.println(mg + "\n");
 
         // find the layers
@@ -48,33 +46,7 @@ public class BruteForceAlgorithm {
         findCoreDecomposition(mg, numberOfLayers, maxD);
     }
 
-    protected static Multigraph<String, GraphLayerEdge> createMultigraph() throws IOException {
-        Multigraph<String, GraphLayerEdge> mg = new Multigraph<>(new ClassBasedEdgeFactory<String, GraphLayerEdge>(GraphLayerEdge.class));
-
-        String line;
-
-        // change the path of the graph
-        BufferedReader br = new BufferedReader(new FileReader("graphs/graph3.txt"));
-        while ((line = br.readLine()) != null) {
-
-            //read each line and set the three strings in three variables
-            String[] parts = line.split("\\s+");
-            String v1 = parts[0];
-            String v2 = parts[1];
-            String v3 = parts[2];
-
-            mg.addVertex(v1);
-            mg.addVertex(v2);
-
-            mg.addEdge(v1, v2, new GraphLayerEdge<>(v1, v2, v3));
-
-        }
-        return mg;
-    }
-
-    protected static ArrayList findLayers(Multigraph<String, GraphLayerEdge> mg) {
-
-        int numberOfLayers = 0;
+    private static ArrayList findLayers(Multigraph<String, GraphLayerEdge> mg) {
 
         ArrayList<String> layers = new ArrayList(mg.edgeSet().size());
 
@@ -84,7 +56,6 @@ public class BruteForceAlgorithm {
                     String label = mg.getEdge(Integer.toString(i), Integer.toString(j)).toString();
                     if (!layers.contains(label)) {
                         layers.add(label);
-                        numberOfLayers++;
                     }
                 }
             }
@@ -92,7 +63,7 @@ public class BruteForceAlgorithm {
         return layers;
     }
 
-    protected static int[][] findDegree(Multigraph<String, GraphLayerEdge> mg, int nol){
+    private static int[][] findDegree(Multigraph<String, GraphLayerEdge> mg, int nol){
 
         int[][] d = new int[nol][mg.vertexSet().size()];
 
@@ -109,29 +80,7 @@ public class BruteForceAlgorithm {
         return d;
     }
 
-    protected static Multigraph<String, GraphLayerEdge> updateGraph(Multigraph<String, GraphLayerEdge> g, int layer, int vertex) {
-
-        boolean flag = true;
-        while (flag) {
-            if (g.edgeSet().size() == 0){
-                break;
-            }
-            for (GraphLayerEdge edge : g.edgeSet()) {
-                if (edge.toString().equals(String.valueOf(layer + 1)) && (Objects.equals(String.valueOf(edge.getV1()), String.valueOf(vertex)) || Objects.equals(String.valueOf(edge.getV2()), String.valueOf(vertex)))) {
-                    //System.out.printf("\nEdge: {" +edge.getV1() + ", " + edge.getV2() + "} from layer " + (layer+1) + " is removed\n");
-                    g.removeEdge(edge);
-                    flag = true;
-                    break;
-                } else {
-                    flag = false;
-                }
-            }
-        }
-
-        return g;
-    }
-
-    protected static void findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int nol, int nov){
+    private static void findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int nol, int nov){
 
         // create all_Ks array
         // all_Ks[i] is e.g.: ['4','5','0']
@@ -179,7 +128,7 @@ public class BruteForceAlgorithm {
                             if (x == v) {
                                 itr.remove();
                                 for (int layer = 0; layer < nol; layer++) {
-                                    tempMg = updateGraph(tempMg, layer, v);
+                                    tempMg = Utilities.updateGraph(tempMg, layer, v);
                                 }
                                 // count degrees again
                                 degree = findDegree(tempMg, nol);
