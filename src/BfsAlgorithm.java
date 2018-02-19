@@ -13,10 +13,10 @@ import java.util.function.Predicate;
 
 public class BfsAlgorithm {
 
-    private static Multigraph<String, GraphLayerEdge> mg;
-    private static ArrayList<String> layers = new ArrayList<>();
-    private static int numberOfVertices = 0;
-    private static int[][] degree;
+    static Multigraph<String, GraphLayerEdge> mg;
+    static ArrayList<String> layers = new ArrayList<>();
+    static int numberOfVertices = 0;
+    static int[][] degree;
 
     public static void main(String[] args) throws IOException{
         // create and print multigraph
@@ -95,7 +95,7 @@ public class BfsAlgorithm {
         return coreDecompositionOfK;
     }
 
-    private static void findCoreDecomposition() {
+    public static ArrayList<ArrayList<Integer>> findCoreDecomposition() {
 
         int numberOfLayers = layers.size();
 
@@ -201,8 +201,10 @@ public class BfsAlgorithm {
         // print the core decomposition of k
         System.out.println("The core decomposition is: " + cores);
         // print the number of cores
-        System.out.println("Number of cores is: " + cores.size());
         System.out.println("Number of computed cores is: " + numberOfComputedCores);
+        System.out.println("Number of cores is: " + cores.size());
+
+        return cores;
     }
 
     private static void findDegree() {

@@ -99,4 +99,13 @@ class Utilities {
         return hm;
     }
 
+    static boolean containsArraylist(ArrayList<ArrayList<Integer>> big, ArrayList<Integer> small) {
+        for(ArrayList<Integer> element: big){
+            if (element.equals(small)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

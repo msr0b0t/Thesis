@@ -149,8 +149,8 @@ public class BruteForceAlgorithm {
         }
 
         System.out.println("The core decomposition is: " + coreDecompositionOfK);
-        System.out.println("Number of cores is: " + coreDecompositionOfK.size());
         System.out.println("Number of computed cores is: " + all_Ks.size());
+        System.out.println("Number of cores is: " + coreDecompositionOfK.size());
     }
 
 }
