@@ -20,11 +20,11 @@ public class BfsAlgorithm {
 
     public static void main(String[] args) throws IOException{
         // create and print multigraph
-        mg = Utilities.createMultigraph("graphs/test.txt");
+        mg = Utilities.createMultigraph("graphs/example.txt");
         numberOfVertices = mg.vertexSet().size();
 
         //find the layers
-        BufferedReader br = new BufferedReader(new FileReader("graphs/test.txt"));
+        BufferedReader br = new BufferedReader(new FileReader("graphs/example.txt"));
         String line = br.readLine();
         int numberOfLayers = Integer.parseInt(line.split("\\s+")[0]);
         for (int i = 1; i < numberOfLayers + 1; i += 1) {
@@ -118,6 +118,8 @@ public class BfsAlgorithm {
         HashMap<String[], ArrayList<String[]>> f = new HashMap<>();
         f.put(tempK, new ArrayList<>());
 
+        int numberOfComputedCores = 0;
+
         while (queue.size() > 0) {
             // get the first element k of the queue
             String[] k = queue.get(0);
@@ -161,6 +163,7 @@ public class BfsAlgorithm {
 
                 //{algorithm 1}
                 ArrayList<Integer> coreDecompositionOfK = kCore(fIntersection, k);
+                numberOfComputedCores++;
                 if (coreDecompositionOfK.size() > 0) {
                     if (cores.indexOf(coreDecompositionOfK) < 0) {
                         cores.add(coreDecompositionOfK);
@@ -198,7 +201,8 @@ public class BfsAlgorithm {
         // print the core decomposition of k
         System.out.println("The core decomposition is: " + cores);
         // print the number of cores
-        System.out.println(cores.size());
+        System.out.println("Number of cores is: " + cores.size());
+        System.out.println("Number of computed cores is: " + numberOfComputedCores);
     }
 
     private static void findDegree() {

@@ -19,17 +19,18 @@ public class BruteForceAlgorithm {
     public static void main(String[] args) throws IOException {
 
         //create the multigraph
-        mg = Utilities.createMultigraph("graphs/test.txt");
+        mg = Utilities.createMultigraph("graphs/example.txt");
         numberOfVertices = mg.vertexSet().size();
 
         //find the layers
-        BufferedReader br = new BufferedReader(new FileReader("graphs/test.txt"));
+        BufferedReader br = new BufferedReader(new FileReader("graphs/example.txt"));
         String line = br.readLine();
         int numberOfLayers = Integer.parseInt(line.split("\\s+")[0]);
         for (int i = 1; i < numberOfLayers + 1; i += 1) {
             layers.add(String.valueOf(i));
         }
         br.close();
+
 
         // find the degree of every vertex for all the layers
         degree = new int[layers.size()][numberOfVertices];
@@ -54,7 +55,7 @@ public class BruteForceAlgorithm {
         }
 
         //find the complete core decomposition
-        findCoreDecomposition(mg, numberOfLayers, maxD);
+        findCoreDecomposition(maxD);
     }
 
     private static void findDegree(Multigraph<String, GraphLayerEdge> tempG) {
@@ -80,18 +81,18 @@ public class BruteForceAlgorithm {
 
     }
 
-    private static void findCoreDecomposition(Multigraph<String, GraphLayerEdge> mg, int nol, int nov){
+    private static void findCoreDecomposition(int maxD){
 
         // create all_Ks array
         // all_Ks[i] is e.g.: ['4','5','0']
         ArrayList<String[]> all_Ks = new ArrayList<>();
-        for (int i = 0; i < Integer.parseInt(new String(new char[nol]).replace("\0", String.valueOf(nov))); i++) {
+        for (int i = 0; i < Double.parseDouble(new String(new char[layers.size()]).replace("\0", String.valueOf(maxD))); i++) {
             boolean allCool = true;
             String[] tmp = String.valueOf(i).split("(?!^)");
             ArrayList<String> tmpArrList = new ArrayList<>(Arrays.asList(tmp));
-            while (tmpArrList.size() < nol) tmpArrList.add(0, "0");
+            while (tmpArrList.size() < layers.size()) tmpArrList.add(0, "0");
             for (String aTmpArrList : tmpArrList) {
-                if (Integer.parseInt(aTmpArrList) > nov) {
+                if (Double.parseDouble(aTmpArrList) > maxD) {
                     allCool = false;
                     break;
                 }
@@ -100,6 +101,7 @@ public class BruteForceAlgorithm {
         }
 
         ArrayList<ArrayList<Integer>> coreDecompositionOfK = new ArrayList<>();
+
 
         // make a copy of the graph and find its degree
         Multigraph<String, GraphLayerEdge> tempMg = new Multigraph<>(new ClassBasedEdgeFactory<String, GraphLayerEdge>(GraphLayerEdge.class));
@@ -113,7 +115,7 @@ public class BruteForceAlgorithm {
             findDegree(tempMg);
             for (int i = 0; i < verticesSet.size(); i++){
                 int v = verticesSet.get(i);
-                for (int l = 0; l < nol; l++) {
+                for (int l = 0; l < layers.size(); l++) {
                     int kl = Integer.parseInt(k[l]);
                     if (degree[l][v] < kl) {
                         // remove vertex v from the set, because it is not contained in the k-core of the graph
@@ -122,7 +124,7 @@ public class BruteForceAlgorithm {
                             int x = (Integer)itr.next();
                             if (x == v) {
                                 itr.remove();
-                                for (int layer = 0; layer < nol; layer++) {
+                                for (int layer = 0; layer < layers.size(); layer++) {
                                     tempMg = Utilities.updateGraph(tempMg, layer, v);
                                 }
                                 // count degrees again
@@ -143,11 +145,12 @@ public class BruteForceAlgorithm {
             if (!coreDecompositionOfK.contains(verticesSet) && !(verticesSet.size() == 0)) {
                 coreDecompositionOfK.add(verticesSet);
             }
+
         }
 
-        for (ArrayList list : coreDecompositionOfK){
-            System.out.println(list);
-        }
+        System.out.println("The core decomposition is: " + coreDecompositionOfK);
+        System.out.println("Number of cores is: " + coreDecompositionOfK.size());
+        System.out.println("Number of computed cores is: " + all_Ks.size());
     }
 
 }
