@@ -19,12 +19,15 @@ public class BfsAlgorithm {
     static int[][] degree;
 
     public static void main(String[] args) throws IOException{
+
+        String graphToUse = "graphs/example.txt";
+
         // create and print multigraph
-        mg = Utilities.createMultigraph("graphs/example.txt");
+        mg = Utilities.createMultigraph(graphToUse);
         numberOfVertices = mg.vertexSet().size();
 
         //find the layers
-        BufferedReader br = new BufferedReader(new FileReader("graphs/example.txt"));
+        BufferedReader br = new BufferedReader(new FileReader(graphToUse));
         String line = br.readLine();
         int numberOfLayers = Integer.parseInt(line.split("\\s+")[0]);
         for (int i = 1; i < numberOfLayers + 1; i += 1) {

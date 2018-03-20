@@ -15,12 +15,14 @@ public class DensestSubgraphAlgorithm {
 
     public static void main(String[] args) throws IOException{
 
+        String graphToUse = "graphs/graph3.txt";
+
         // create and print multigraph
-        BfsAlgorithm.mg = Utilities.createMultigraph("graphs/graph3.txt");
+        BfsAlgorithm.mg = Utilities.createMultigraph(graphToUse);
         BfsAlgorithm.numberOfVertices = BfsAlgorithm.mg.vertexSet().size();
 
         //find the layers
-        BufferedReader br = new BufferedReader(new FileReader("graphs/graph3.txt"));
+        BufferedReader br = new BufferedReader(new FileReader(graphToUse));
         String line = br.readLine();
         int numberOfLayers = Integer.parseInt(line.split("\\s+")[0]);
         for (int i = 1; i < numberOfLayers + 1; i += 1) {
